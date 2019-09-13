@@ -1,0 +1,163 @@
+/// Reads n bytes from fd.
+bool readNBytes(int fd, void *buf, std::size_t n) {
+    std::size_t offset = 0;
+    char *cbuf = reinterpret_cast<char*>(buf);
+    while (true) {
+        ssize_t ret = recv(fd, cbuf + offset, n - offset, MSG_WAITALL);
+        if (ret < 0 && errno != EINTR) {
+            // Error occurred
+            throw IOException(strerror(errno));
+        } else if (ret == 0) {
+            // No data available anymore
+            if (offset == 0) return false;
+            else             throw ProtocolException("Unexpected end of stream");
+        } else if (offset + ret == n) {
+            // All n bytes read
+            return true;
+        } else {
+            offset += ret;
+        }
+    }
+}
+
+/// Reads message from fd
+std::vector<char> readMessage(int fd) {
+    std::uint64_t size;
+    if (readNBytes(fd, &size, sizeof(size))) {
+        std::vector buf(size);
+        if (readNBytes(fd, buf.data(), size)) {
+            return buf;
+        } else {
+            throw ProtocolException("Unexpected end of stream");
+        }
+    } else {
+        // connection was closed
+        return std::vector<char>();
+        
+// Or you can read into small (possibly fixed size) buffers and collect them into a std::vector, possibly also storing some flag to detect when a message is complete, and then just process the entire message iterating through the vector
+
+// memcpy(dest, &buf, buf)
+
+#include <iostream>
+#include <cstring>
+
+int main() {
+    unsigned char bytes[4]{ 0xdd, 0xcc, 0xbb, 0xaa };
+
+    int value;
+    std::memcpy(&value, bytes, sizeof(int));
+
+    std::cout << std::hex << value << '\n';
+}
+
+// another same way
+int value;
+assert(sizeof value == sizeof bytes);
+std::memcpy(&value, bytes, sizeof bytes);
+
+
+// an idea, flag between reading header size and msg
+int receive(socket sock, char * buffer, int chunk_size)
+{
+    int offset = 0;
+
+    while (chunk_size > 0)
+    {
+        // add select() here when you have a non-blocking socket.
+        int n = recv(sock, buffer+offset, chunk_size);
+        // TODO: error handling
+        offset += n;
+        chunk_size -= n;
+    }
+
+    // return amount of received bytes
+    return offset;
+}
+
+void do_receive(void)
+{
+    struct {
+        int size;
+        // other message information
+    } header;
+
+    while (true)
+    {
+        receive(sock, &header, sizeof(header);
+        receive(sock, buffer, header.size);
+        process_message(buffer, header.size);
+    }
+}
+
+
+// byte array to int
+inline int16_t ReadINT16(uint8_t *ByteArray, int32_t Offset)
+{
+    int16_t result;
+    memcpy(&result, ByteArray+Offset, sizeof(int16_t));
+    return result;
+};
+
+// c++17 std::byte
+#include <cstddef>
+int main()
+{
+    std::byte myByte{ 2 };
+}
+
+#include <iostream>
+#include <cstddef>
+ 
+int main()
+{
+    std::byte myByte{ 2 };
+    std::cout << std::to_integer<int>(myByte) << std::endl;
+}
+
+#include <iostream>
+#include <cstddef>
+ 
+using namespace std;
+ 
+void PrintByte(const byte& aByte)
+{
+    cout << to_integer<int>(aByte) << endl;
+}
+ 
+int main()
+{
+    byte myByte{ 2 };
+    PrintByte(myByte);  // 2
+ 
+    // A 2-bit left shift
+    myByte <<= 2;
+    PrintByte(myByte);  // 8
+ 
+    // Initialize two new bytes using binary literals.
+    byte byte1{ 0b0011 };
+    byte byte2{ 0b1010 };
+    PrintByte(byte1);   // 3
+    PrintByte(byte2);   // 10
+ 
+    // Bit-wise OR and AND operations
+    byte byteOr = byte1 | byte2;
+    byte byteAnd = byte1 & byte2;
+    PrintByte(byteOr);  // 11
+    PrintByte(byteAnd); // 2
+}
+
+// std::vector<std::byte>.
+void SomeCApi(unsigned char* buffer, unsigned int size)
+{
+    for (unsigned char index = 0; index < size; ++index) {
+        buffer[index] = index;
+    }
+}
+ 
+int main()
+{
+    std::vector<std::byte> buffer{ 100 };
+    SomeCApi(reinterpret_cast<unsigned char*>(&buffer[0]), buffer.size());
+ 
+    for (const auto& element : buffer) { PrintByte(element); }
+}
