@@ -1,0 +1,7 @@
+// compile, thostmduserapi_se == libthostmduserapi_se.so, -pthread for threading, 
+// -L for finding shared lib, wl, rpath for finding run path at runtime.
+
+g++ -L/home/jc/gits/stuff_ctp/myctp1/myctp1 -Wl,-rpath=/home/jc/gits/stuff_ctp/myctp1/myctp1 -pthread -std=c++11 -Wall -Werror -g logon.cpp -o test1 -lthostmduserapi_se
+
+g++ -L. -Wl,-rpath=/home/jc/gits/stuff_ctp/myctp/myctp1 -pthread -std=c++11 -Wall -Werror -g logon.cpp -o test2 -lthostmduserapi_se
+

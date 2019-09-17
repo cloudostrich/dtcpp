@@ -161,3 +161,83 @@ int main()
  
     for (const auto& element : buffer) { PrintByte(element); }
 }
+
+
+// structs into bytes
+struct S
+{
+    int a;
+    int b;
+    // etc.
+};
+
+S my_s;
+
+char* my_s_bytes = reinterpret_cast<char*>(&my_s);
+
+// or, if you prefer static_cast:
+char* my_s_bytes = static_cast<char*>(static_cast<void*>(&my_s));
+
+// I like to use a union.
+
+typedef struct b {
+  unsigned int x;
+  unsigned int y;
+} b_s;
+
+typedef union a {
+  b_s my_struct;
+  char ary[sizeof(b_s)];
+} a_u;
+
+// char ptr way
+(char*)&someStruct
+ /*
+ You do things in the wrong order, the expression
+
+&struct_data+i
+takes the address of struct_data and increases it by i times the size of the structure.
+
+Try this instead:
+
+*((char *) &struct_data + i)
+This converts the address of struct_data to a char * and then adds the index, and then uses the dereference operator (unary *) to get the "char" at that address.
+*/
+
+// another one using ptrs
+for(unsigned int i = 0; i<sizeof(struct_data); i++){
+    // +i has to be outside of the parentheses in order to increment the address
+    // by the size of a char. Otherwise you would increment by the size of
+    // struct_data. You also have to dereference the whole thing, or you will
+    // assign an address to data[i]
+    data[i] = *((char*)(&struct_data) + i); 
+}
+
+AMG_ANGLES* tmp = (AMG_ANGLES*)data; //Re-Make the struct
+//tmp is a pointer so you have to use -> which is shorthand for (*tmp).yaw
+cout << tmp->yaw; 
+}
+
+// memcpy way
+struct AMG_ANGLES {
+    float yaw;
+    float pitch;
+    float roll;
+};
+
+int main() {
+    AMG_ANGLES struct_data;
+
+    struct_data.yaw = 87.96;
+    struct_data.pitch = -114.58;
+    struct_data.roll = 100.50;
+
+    //Sending Side
+    char b[sizeof(struct_data)];
+    memcpy(b, &struct_data, sizeof(struct_data));
+
+    //Receiving Side
+    AMG_ANGLES tmp; //Re-make the struct
+    memcpy(&tmp, b, sizeof(tmp));
+    cout << tmp.yaw; //Display the yaw to see if it's correct
+}

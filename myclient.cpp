@@ -12,6 +12,12 @@
 
 //using namespace std;
 
+struct Header{
+		u_int16_t size;
+		u_int16_t type;
+	};
+
+
 int main()
 {
 	// Create a socket
@@ -41,54 +47,70 @@ int main()
 
 
 	// while Loop:
-	char buf[4];
-	std::string userInput;
+	char buf[1024];
+	//std::string userInput;
 
-	do {
+	//do {
 
-		// Enter lines of text
-		// std::cout << "> ";
-		// getline(std::cin, userInput);
-		
-		// Encoding Request
-		DTC::s_EncodingRequest enc_req;
-		
-		// Send to server
-		int sendRes = send(sock, enc_req, enc_req.GetMessageSize(), 0);
-		
-		// Check if failed
-		if (sendRes == -1)
-		{
-			std::cout << "Could not send to server! Whoops!\r\n";
-			continue;
-		}
+	// Enter lines of text
+	// std::cout << "> ";
+	// getline(std::cin, userInput);
+	
+	// Encoding Request
+	DTC::s_EncodingRequest enc_req;
+	
+	// Send to server
+	char bytes2send[enc_req.Size];
+	memcpy(bytes2send, &enc_req, enc_req.Size);
+	int sendRes = send(sock, bytes2send, enc_req.Size, 0);
+	
+	// Check if failed
+	if (sendRes == -1)
+	{
+		std::cout << "Could not send to server! Whoops!\r\n";
+		//continue;
+	}
 
-		// Wait for response
-		memset(buf, 0, 4);
-		//int bytesReceived = recv(sock, buf, 4, 0);
-		int header = recv(sock, buf, 4, 0);
-		
-		// prevent crash when error
-		if (header == -1)
-		{
-			std::cout << "There was an error getting resonse from server \r\n";
-		}
-		else
-		{
-			// Display response
-			//std::cout << "SERVER> " << std::string(buf, bytesReceived) << "\r\n";
-			
-			// Get Message Size and Type
-			uint16_t m_size = header;
-			uint16_t m_type = ;
+	// Wait for response
+	DTC::s_EncodingResponse m_resp;
+	Header header;
 
-			// Get rest of message
-
-		}
+	memset(buf, 0, 4);
+	//int bytesReceived = recv(sock, buf, 4, 0);
+	int bytesReceived = recv(sock, buf, 4, 0);
+	memcpy(&header, static_cast<void*>(buf), 4);	
+	// prevent crash when error
+	if (bytesReceived == -1)
+	{
+		std::cout << "There was an error getting resonse from server \r\n";
+	}
+	else
+	{
+		// Display response
+		//std::cout << "SERVER> " << std::string(buf, bytesReceived) << "\r\n";
 		
-		// Logon request
-		// secdef?
-	} while (true);
+		// Get rest of message
+		DTC::s_EncodingResponse enc_resp;
+		u_int16_t m_size = header.size - 4;
+		std::cout << "  m_size: " << m_size << std::endl;
+		memset(buf + 4, 0, m_size);
+		int bytesReceived = recv(sock, buf+4, m_size, 0);
+		//memcpy(&enc_resp, bytesReceived, header.size);
+		
+		// combine header and message into 1 byte array
+
+		enc_resp.CopyFrom(static_cast<void*>(buf));
+		std::cout << "Enc_Resp: Size " << enc_resp.Size << std::endl;
+		std::cout << "Enc_Resp: Type " << enc_resp.Type << std::endl;
+		std::cout << "Enc_Resp: ProtocolVersion " << enc_resp.ProtocolVersion << std::endl;
+		std::cout << "Enc_Resp: Encoding " << enc_resp.Encoding << std::endl;
+		std::cout << "Enc_Resp: ProtocolType " << enc_resp.ProtocolType << std::endl;
+
+	}
+	
+	// Logon request
+	// secdef?
+	//} while (true);
 	// Close the socket
 	close(sock);
 

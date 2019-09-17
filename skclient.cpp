@@ -7,7 +7,7 @@
 #include <string.h>
 #include <string>
 
-using namespace std;
+//using namespace std;
 
 int main()
 {
@@ -21,7 +21,7 @@ int main()
 
 	// Create a hint structure for the server we're connecting with
 	int port = 54000;
-	string ipAddress = "127.0.0.1";
+	std::string ipAddress = "127.0.0.1";
 
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
@@ -38,13 +38,13 @@ int main()
 
 	// while Loop:
 	char buf[4096];
-	string userInput;
+	std::string userInput;
 
 	do {
 
 		// Enter lines of text
-		cout << "> ";
-		getline(cin, userInput);
+		std::cout << "> ";
+		getline(std::cin, userInput);
 		
 		// Send to server
 		int sendRes = send(sock, userInput.c_str(), userInput.size() + 1.0, 0);
@@ -52,7 +52,7 @@ int main()
 		// Check if failed
 		if (sendRes == -1)
 		{
-			cout << "Could not send to server! Whoops!\r\n";
+			std::cout << "Could not send to server! Whoops!\r\n";
 			continue;
 		}
 
@@ -62,12 +62,12 @@ int main()
 		// prevent crash when error
 		if (bytesReceived == -1)
 		{
-			cout << "There was an error getting resonse from server \r\n":
+			std::cout << "There was an error getting resonse from server \r\n";
 		}
 		else
 		{
 			// Display response
-			cout << "SERVER> " << string(buf, bytesReceived) << "\r\n";
+			std::cout << "SERVER> " << std::string(buf, bytesReceived) << "\r\n";
 		}
 	} while (true);
 	// Close the socket
