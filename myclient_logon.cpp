@@ -18,18 +18,11 @@ struct Header{
 	};
 
 void send_message(int sock, void *msg2send, u_int16_t size){
-    // Send message to server
-	//char bytes2send[msg.Size];
-	//memcpy(bytes2send, &msg, msg.Size);
-	//char *buf = reinterpret_cast<char*>(msg2send);
-	//char *buf = static_cast<char*>(msg2send);  
 	int sendRes = send(sock, msg2send, size, 0);
-	
 	// Check if failed
 	if (sendRes == -1)
 	{
 		std::cout << "Could not send to server! Whoops!\r\n";
-		//continue;
 	}
 }
 
@@ -46,7 +39,7 @@ int main()
 	// Create a hint structure for the server we're connecting with
 	// ("127.0.0.1", 11099)
 	int port = 11099;
-	std::string ipAddress = "192.168.1.171";
+	std::string ipAddress = "127.0.0.1";
 
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
@@ -69,19 +62,9 @@ int main()
 	// Send to server
 	char bytes2send[enc_req.Size];
 	memcpy(bytes2send, &enc_req, enc_req.Size);
-	/*
-	int sendRes = send(sock, bytes2send, enc_req.Size, 0);
-	// Check if failed
-	if (sendRes == -1)
-	{
-		std::cout << "Could not send to server! Whoops!\r\n";
-		//continue;
-	}
-	*/
 	send_message(sock, bytes2send, enc_req.Size);
 	
 	// Wait for response
-	DTC::s_EncodingResponse m_resp;
 	Header header;
 
 	memset(buf, 0, 4);
@@ -95,17 +78,12 @@ int main()
 	}
 	else
 	{
-		// Display response
-		//std::cout << "SERVER> " << std::string(buf, bytesReceived) << "\r\n";
-		
-		// Get rest of message
+    	// Get rest of message
 		DTC::s_EncodingResponse enc_resp;
 		u_int16_t m_size = header.size - 4;
 		std::cout << "  m_size: " << m_size << std::endl;
 		memset(buf + 4, 0, m_size);
 		int bytesReceived = recv(sock, buf+4, m_size, 0);
-		//memcpy(&enc_resp, bytesReceived, header.size);
-		
 		// combine header and message into 1 byte array
 
 		enc_resp.CopyFrom(static_cast<void*>(buf));
@@ -123,23 +101,11 @@ int main()
 	// Send to server
 	char bytes2send2[logon_req.Size];
 	memcpy(bytes2send2, &logon_req, logon_req.Size);
-	/*
-	int sendRes2 = send(sock, bytes2send2, logon_req.Size, 0);
-	// Check if failed
-	if (sendRes2 == -1)
-	{
-		std::cout << "Could not send to server! Whoops!\r\n";
-		//continue;
-	}
-*/
 	send_message(sock, bytes2send2, logon_req.Size);
 
 	// Wait for response
-	//DTC::s_LogonResponse logon_resp;
-	//Header header;
 
 	memset(buf, 0, 4);
-	//int bytesReceived = recv(sock, buf, 4, 0);
 	int bytesReceived2 = recv(sock, buf, 4, 0);
 	memcpy(&header, static_cast<void*>(buf), 4);	
 	// prevent crash when error
@@ -149,17 +115,12 @@ int main()
 	}
 	else
 	{
-		// Display response
-		//std::cout << "SERVER> " << std::string(buf, bytesReceived) << "\r\n";
-		
-		// Get rest of message
+    	// Get rest of message
 		DTC::s_LogonResponse logon_resp;
 		u_int16_t m_size = header.size - 4;
 		std::cout << "  m_size: " << m_size << std::endl;
 		memset(buf + 4, 0, m_size);
 		int bytesReceived2 = recv(sock, buf+4, m_size, 0);
-		//memcpy(&enc_resp, bytesReceived, header.size);
-		
 		// combine header and message into 1 byte array
 
 		logon_resp.CopyFrom(static_cast<void*>(buf));
