@@ -29,12 +29,13 @@ void send_heartbeat(int &sock) {
 	std::cout << "HeartBeater Started...\n";
 	char buf[16];
 	DTC::s_Heartbeat hrtbt;
-	//std::cout << "Heartbeater Size: " << hrtbt.Size << "\n";
+	memcpy(buf, &hrtbt, hrtbt.Size);
 	while (!fin) {
 		int sendRes = send(sock, buf, hrtbt.Size, 0);
 		if (sendRes == -1) {
 			std::cout << "Could not send Heartbeat to Server!!!\n";
 		}
+		//std::cout << "Heartbeated...\n";
 		std::this_thread::sleep_for(std::chrono::seconds(HRTBTINTERVAL));
 	}
 }
@@ -54,10 +55,11 @@ void send_message(int sock, void *msg2send, u_int16_t size){
 void listen_server(int &sock){
 	// Listen for messages from dtc server
 	std::cout << "listen_server thread started! \n";
-	char buf[1024];
+	char buf[2048];
 	Header header;
 	DTC::s_EncodingResponse enc_resp;
 	DTC::s_LogonResponse logon_resp;
+	DTC::s_MarketDataUpdateBidAskCompact mkt_bac;
 
 	while (!fin) {
 		memset(buf, 0, 4);
@@ -68,15 +70,26 @@ void listen_server(int &sock){
 		}
 		else {
 			memset(buf+4, 0, header.size-4);
-			int bytesReceived = recv(sock, buf+4, header.size - 4, 0);
+			int bytesReceived = recv(sock, buf+4, header.size-4, 0);
 			// ignore heartbeat responses
 			if (header.type != 3) {
 				// switch case here
 				switch(header.type) 
 				{
-					case 117 :
-						std::cout << "MARKET_DATA_UPDATE_BID_ASK_COMPACT: " << header.type << "\n";  
+					case 117 :  // Market Data Udate BidAsk Compact
+						{
+						mkt_bac.Clear();
+						mkt_bac.CopyFrom(static_cast<void*>(buf));
+						std::cout << "MARKET_DATA_UPDATE_BID_ASK_COMPACT, "  << 
+							"SIZE:" << mkt_bac.GetMessageSize() << "," << 
+							mkt_bac.GetDateTime() << ", " << 
+							mkt_bac.GetSymbolID() << ", " << 
+							mkt_bac.GetBidPrice() << ", " << 
+							mkt_bac.GetBidQuantity() << ", " << 
+							mkt_bac.GetAskPrice() << ", " << 
+							mkt_bac.GetAskQuantity() << ", " << "\n"; 
 						break;
+						}
 					case 112 :
 						std::cout << "MARKET_DATA_UPDATE_TRADE_COMPACT: " << header.type <<"\n";
 						break;
@@ -87,38 +100,37 @@ void listen_server(int &sock){
 						{ 
 						enc_resp.CopyFrom(static_cast<void*>(buf));
 						std::cout << "ENCODING_RESPONSE: " <<
-							enc_resp.Size << ", " <<
-							enc_resp.Type << ", " <<
-							enc_resp.ProtocolVersion << ", " <<
-							enc_resp.Encoding << ", " <<
-							enc_resp.ProtocolType << "\n";
+							enc_resp.GetMessageSize() << ", " <<
+							enc_resp.GetProtocolVersion() << ", " <<
+							enc_resp.GetEncoding() << ", " <<
+							enc_resp.GetProtocolType() << "\n";
 						break;
 						}
 					case 2 : //DTC::s_LogonResponse logon_resp;
 						{
 						logon_resp.CopyFrom(static_cast<void*>(buf));
 						std::cout << "LOGON_RESPONSE: " << 
-							logon_resp.Size << ","  << 
-							logon_resp.Type << ", " << 
-							logon_resp.ProtocolVersion << ", " << 
-							logon_resp.Result << ", " << 
-							logon_resp.ReconnectAddress << ", " << 
-							logon_resp.Integer_1 << ", " << 
-							logon_resp.ServerName << ", " << 
-							logon_resp.MarketDepthUpdatesBestBidAndAsk << ", " << 
-							logon_resp.TradingIsSupported << ", " << 
-							logon_resp.OCOOrdersSupported << ", " << 
-							logon_resp.OrderCancelReplaceSupported << ", " << 
-							logon_resp.SymbolExchangeDelimiter << ", " << 
-							logon_resp.SecurityDefinitionsSupported << ", " << 
-							logon_resp.HistoricalPriceDataSupported << ", " << 
-							logon_resp.ResubscribeWhenMarketDataFeedAvailable <<  ", " << 
-							logon_resp.MarketDepthIsSupported << ", " << 
-							logon_resp.OneHistoricalPriceDataRequestPerConnection << ", " << 
-							logon_resp.BracketOrdersSupported << ", " << 
-							logon_resp.UseIntegerPriceOrderMessages << ", " << 
-							logon_resp.UsesMultiplePositionsPerSymbolAndTradeAccount << ", " << 
-							logon_resp.MarketDataSupported << "\n";
+							logon_resp.GetMessageSize() << ", "  << 
+							logon_resp.GetProtocolVersion() << ", " << 
+							logon_resp.GetResult() << ", " <<
+							logon_resp.GetResultText() << ", " <<
+							logon_resp.GetReconnectAddress() << ", " << 
+							logon_resp.GetInteger_1() << ", " << 
+							logon_resp.GetServerName() << ", " << 
+							logon_resp.GetMarketDepthUpdatesBestBidAndAsk() << ", " << 
+							logon_resp.GetTradingIsSupported() << ", " << 
+							logon_resp.GetOCOOrdersSupported() << ", " << 
+							logon_resp.GetOrderCancelReplaceSupported() << ", " << 
+							logon_resp.GetSymbolExchangeDelimiter() << ", " << 
+							logon_resp.GetSecurityDefinitionsSupported() << ", " << 
+							logon_resp.GetHistoricalPriceDataSupported() << ", " <<
+							logon_resp.GetResubscribeWhenMarketDataFeedAvailable() <<  ", " << 
+							logon_resp.GetMarketDepthIsSupported() << ", " << 
+							logon_resp.GetOneHistoricalPriceDataRequestPerConnection() << ", " << 
+							logon_resp.GetBracketOrdersSupported() << ", " << 
+							logon_resp.GetUseIntegerPriceOrderMessages() << ", " << 
+							logon_resp.GetUsesMultiplePositionsPerSymbolAndTradeAccount() << ", " << 
+							logon_resp.GetMarketDataSupported() << "\n";
 						break;
 						}
 					default:
@@ -142,7 +154,7 @@ int main()
 	// Create a hint structure for the server we're connecting with
 	// ("127.0.0.1", 11099)
 	int port = 11099;
-	std::string ipAddress = "192.168.1.171";
+	std::string ipAddress = "192.168.1.14";
 
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
@@ -181,12 +193,11 @@ int main()
 	{
 		DTC::s_MarketDataRequest mktdat_req;
 		char bytes2send[mktdat_req.Size];
-		//std::string mysymbol = "USOil";
-		char mysymbol[] = "USOil";
+		const char mysymbol[] = "XAUUSD";
 		mktdat_req.RequestAction = DTC::RequestActionEnum::SUBSCRIBE;
-		mktdat_req.SymbolID = 888;
+		mktdat_req.SymbolID = 88;
 		//strncpy(mktdat_req.Symbol, mysymbol.c_str(), sizeof(mysymbol));
-		mktdat_req.SetSymbol(mysymbol);
+		mktdat_req.SetSymbol(mysymbol); 
 		memcpy(bytes2send, &mktdat_req, mktdat_req.Size);
 		send_message(sock, bytes2send, mktdat_req.Size);
 	}

@@ -121,7 +121,7 @@ int main()
 		std::cout << "  m_size: " << m_size << std::endl;
 		memset(buf + 4, 0, m_size);
 		int bytesReceived2 = recv(sock, buf+4, m_size, 0);
-		// combine header and message into 1 byte array
+		// combine header and message into 1 bytearray
 
 		logon_resp.CopyFrom(static_cast<void*>(buf));
 		std::cout << "Logon_Resp: Size: " << logon_resp.Size << "\n";
