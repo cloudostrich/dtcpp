@@ -10,6 +10,7 @@
 #include <mutex>
 #include <chrono>
 #include <iomanip>
+#include <fstream>
 
 #include "DTCProtocol.cpp"
 #include "DTCProtocol.h"
@@ -56,6 +57,8 @@ void send_message(int sock, void *msg2send, u_int16_t size){
 void listen_server(int &sock){
 	// Listen for messages from dtc server
 	std::cout << "listen_server thread started! \n";
+	std::fstream pricefile;
+	pricefile.open("pricefile.csv", std::ios::app);
 	char buf[512];
 	Header header;
 	DTC::s_EncodingResponse enc_resp;
@@ -72,7 +75,8 @@ void listen_server(int &sock){
 		else {
 			//memset(buf+4, 0, header.size-4);
 			int bytesReceived = recv(sock, buf+4, header.size-4, 0);
-			time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			time_t now1 = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			auto now = std::put_time(std::localtime(&now1), "%F %T"); 
 			if (header.type != 3) {	// ignore heartbeat responses
 				// switch case here
 				switch(header.type) 
@@ -81,15 +85,18 @@ void listen_server(int &sock){
 						{
 						//mkt_bac.Clear();
 						mkt_bac.CopyFrom(static_cast<void*>(buf));
-						std::cout << std::put_time(std::localtime(&now), "%F %T")  << ", " <<
-							"117, " <<
-							mkt_bac.GetMessageSize() << "," << 
+						pricefile << now << ", " << "117, " <<
+							mkt_bac.GetMessageSize() << ", " <<
 							mkt_bac.GetDateTime() << ", " << 
 							mkt_bac.GetSymbolID() << ", " << 
 							mkt_bac.GetBidPrice() << ", " << 
 							mkt_bac.GetBidQuantity() << ", " << 
 							mkt_bac.GetAskPrice() << ", " << 
-							mkt_bac.GetAskQuantity() << ", " << "\n"; 
+							mkt_bac.GetAskQuantity() << ", " << "\n";
+						std::cout << now  << ", " << "117, " <<
+							mkt_bac.GetSymbolID() << ", " << 
+							mkt_bac.GetBidPrice() << ", " << 
+							mkt_bac.GetAskPrice() << ", " << "\n";
 						break;
 						}
 					case 112 :
