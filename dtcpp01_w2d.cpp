@@ -148,6 +148,7 @@ void listen_server(int &sock){
 			}
 		}
 	}
+	pricefile.close()
 }
 
 
@@ -163,7 +164,7 @@ int main()
 	// Create a hint structure for the server we're connecting with
 	// ("127.0.0.1", 11099)
 	int port = 11099;
-	std::string ipAddress = "192.168.1.14";
+	std::string ipAddress = "127.0.0.1";
 
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
