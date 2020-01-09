@@ -111,7 +111,7 @@ void listen_server(int &sock){
 						std::cout << now << ", 112, " <<
 							mkt_tc.GetSymbolID() << ", " << 
 							mkt_tc.GetPrice() << ", " << 
-							mkt_tc.GetVolume() << ", " << 
+							mkt_tc.GetVolume() << ", " << "\n";
 							//mkt_tc.GetAtBidOrAsk() << "\n";
 						break;
 						}
@@ -218,7 +218,7 @@ void listen_server(int &sock){
 	}
 	fileprice.close();
 	filelog.close();
-	std::cout " Closed 2 files...\n";
+	std::cout << " Closed 2 files...\n";
 }
 
 
