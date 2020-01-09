@@ -138,8 +138,7 @@ void listen_server(int &sock){
 							mkt_snap.GetBidAskDateTime() << ", " <<
 							mkt_snap.GetSessionSettlementDateTime() << ", " <<
 							mkt_snap.GetTradingSessionDate() << ", " <<
-							mkt_snap.GetTradingStatus() << ", " <<
-							mkt_snap.GetMarketDepthUpdateDateTime() << ", " << "\n";
+							mkt_snap.GetTradingStatus() << "\n";
 						std::cout << "MARKET_DATA_SNAPSHOT: 104 " <<"\n";
 						break;
 						}
