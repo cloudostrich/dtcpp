@@ -214,6 +214,7 @@ void listen_server(int &sock){
 				}
 			}
 		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	fileprice.close();
 	filelog.close();
