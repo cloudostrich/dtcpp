@@ -345,13 +345,14 @@ int main()
 		int symidbase = 800;
 		//const char mysymbol[] = "F.US.CLEG20";
 		for (int i=0; symlist[i] != NULL; i++){
-			char bytes2send[mktdat_req.Size];
 			DTC::s_MarketDataRequest mktdat_req;
+			char bytes2send[mktdat_req.Size];
 			mktdat_req.RequestAction = DTC::RequestActionEnum::SUBSCRIBE;
 			mktdat_req.SymbolID = symidbase + i;
 			mktdat_req.SetSymbol(symlist[i]);
 			memcpy(bytes2send, &mktdat_req, mktdat_req.Size);
 			send_message(sock, bytes2send, mktdat_req.Size);
+		}
 	}
 
 	// Start Heartbeater
