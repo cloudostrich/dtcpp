@@ -13,7 +13,9 @@ using this block as example to add mutliple symbols
 
 	for (int i=0; symlist[i] != NULL; i++) 
 		printf("%s\n", symlist[i]);
-		*/
+		
+*** Check rubber months ID ***
+*/
 
 #include <iostream>
 #include <sys/types.h>
@@ -34,7 +36,15 @@ using this block as example to add mutliple symbols
 
 // Working Flag
 static bool fin = false;
+
+// Key Params
 const int HRTBTINTERVAL= 15;
+char INSTR[10] = "F.US.";
+char DT[10] = "20";
+int PORT = 11099;
+std::string IPADDRESS = "127.0.0.1";
+char MYCLIENTNAME[] = "wings of ostrich";
+int SYMBID = 201;
 
 struct Header{
 		u_int16_t size;
@@ -68,13 +78,25 @@ void send_message(int sock, void *msg2send, u_int16_t size){
 	}
 }
 
-void listen_server(int &sock){
+void listen_server(int &sock, char* instr, char* dt){
 	/* Listen for messages from dtc server */
 	std::cout << "listen_server thread started! \n";
 	std::fstream fprice;
 	std::fstream flog;
-	fprice.open("fprice.csv", std::ios::app);
-	flog.open("flog.csv", std::ios::app);
+	const char sep[] = "_";
+	
+	char file_log[30] = "log_";
+	strcat(file_log, instr);
+	strcat(file_log, sep);
+	strcat(file_log, dt);
+	
+	char file_prc[30] = "prc_";
+	strcat(file_prc, instr);
+	strcat(file_prc, sep);
+	strcat(file_prc, dt);
+	
+	fprice.open(file_prc, std::ios::app);
+	flog.open(file_log, std::ios::app);
 	char buf[2048];
 	Header header;
 	DTC::s_EncodingResponse enc_resp;
@@ -264,8 +286,16 @@ void listen_server(int &sock){
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
+	// Confirm contract name
+	//char instr[20] = "F.US.";
+	strcat(INSTR, argv[1]);
+	
+	//char dt[8] = "20";
+	strcat(DT, argv[2]);
+	std::cout << "This feed for: " << INSTR << " on: " << DT <<"\n";
+	
 	// Create a socket
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1) {
@@ -275,13 +305,13 @@ int main()
 
 	// Create a hint structure for the server we're connecting with
 	// ("127.0.0.1", 11099)
-	int port = 11099;
-	std::string ipAddress = "127.0.0.1";
+	//int port = 11099;
+	//std::string ipAddress = "127.0.0.1";
 
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
-	hint.sin_port = htons(port);
-	inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
+	hint.sin_port = htons(PORT);
+	inet_pton(AF_INET, IPADDRESS.c_str(), &hint.sin_addr);
 
 	// Connect to the server on the socket
 	int connectRes = connect(sock, (sockaddr*)&hint, sizeof(hint));
@@ -290,7 +320,7 @@ int main()
 	}
 
 	// start listening thread
-	std::thread listener (listen_server, std::ref(sock));
+	std::thread listener (listen_server, std::ref(sock), INSTR, DT);
 
 	// Encoding Request
 	{
@@ -302,10 +332,10 @@ int main()
 
 	// Logon request
 	{
-	char myclientname[] = "John's flying ostrich";
+	//char myclientname[] = "John's flying ostrich";
 	DTC::s_LogonRequest logon_req;
 	logon_req.HeartbeatIntervalInSeconds = HRTBTINTERVAL;
-	logon_req.SetClientName(myclientname);
+	logon_req.SetClientName(MYCLIENTNAME);
 	char bytes2send[logon_req.Size];
 	memcpy(bytes2send, &logon_req, logon_req.Size);
 	send_message(sock, bytes2send, logon_req.Size);
@@ -315,40 +345,40 @@ int main()
 	{
 		//DTC::s_MarketDataRequest mktdat_req;
 		//char bytes2send[mktdat_req.Size];
-		const char sym0[] = "F.US.ZFTG20";
-		const char sym1[] = "F.US.ZFTH20";
-		const char sym2[] = "F.US.ZFTJ20";
-		const char sym3[] = "F.US.ZFTK20";
-		const char sym4[] = "F.US.ZFTM20";
-		const char sym5[] = "F.US.ZFTN20";
-		const char sym6[] = "F.US.ZFTQ20";
-		const char sym7[] = "F.US.ZFTU20";
-		const char sym8[] = "F.US.ZFTV20";
-		const char sym9[] = "F.US.ZFTX20";
-		const char sym10[] = "F.US.ZFTZ20";
-		const char sym11[] = "F.US.ZFTF21";
+		const char sym1[] = "F.US.ZFTF21";
+		const char sym2[] = "F.US.ZFTG21";
+		const char sym3[] = "F.US.ZFTH21";
+		const char sym4[] = "F.US.ZFTJ21";
+		const char sym5[] = "F.US.ZFTK21";
+		const char sym6[] = "F.US.ZFTM21";
+		const char sym7[] = "F.US.ZFTN20";
+		const char sym8[] = "F.US.ZFTQ20";
+		const char sym9[] = "F.US.ZFTU20";
+		const char sym10[] = "F.US.ZFTV20";
+		const char sym11[] = "F.US.ZFTX20";
+		const char sym12[] = "F.US.ZFTZ20";
 
 		const char *symlist[15];
-		symlist[0] = sym0;
-		symlist[1] = sym1;
-		symlist[2] = sym2;
-		symlist[3] = sym3;
-		symlist[4] = sym4;
-		symlist[5] = sym5;
-		symlist[6] = sym6;
-		symlist[7] = sym7;
-		symlist[8] = sym8;
-		symlist[9] = sym9;
-		symlist[10] = sym10;
-		symlist[11] = sym11;
+		symlist[0] = sym1;
+		symlist[1] = sym2;
+		symlist[2] = sym3;
+		symlist[3] = sym4;
+		symlist[4] = sym5;
+		symlist[5] = sym6;
+		symlist[6] = sym7;
+		symlist[7] = sym8;
+		symlist[8] = sym9;
+		symlist[9] = sym10;
+		symlist[10] = sym11;
+		symlist[11] = sym12;
 		symlist[12] = NULL;
-		int symidbase = 800;
+		//int symidbase = SYMBID;
 		//const char mysymbol[] = "F.US.CLEG20";
 		for (int i=0; symlist[i] != NULL; i++){
 			DTC::s_MarketDataRequest mktdat_req;
 			char bytes2send[mktdat_req.Size];
 			mktdat_req.RequestAction = DTC::RequestActionEnum::SUBSCRIBE;
-			mktdat_req.SymbolID = symidbase + i;
+			mktdat_req.SymbolID = SYMBID + i;
 			mktdat_req.SetSymbol(symlist[i]);
 			memcpy(bytes2send, &mktdat_req, mktdat_req.Size);
 			send_message(sock, bytes2send, mktdat_req.Size);

@@ -565,7 +565,7 @@ namespace DTC
 	uint8_t s_Logoff::GetDoNotReconnect() const
 	{
 		if (Size < offsetof(s_Logoff, DoNotReconnect) + sizeof(DoNotReconnect))
-			return false;
+			return 0;
 
 		return DoNotReconnect;
 	}
@@ -762,6 +762,15 @@ namespace DTC
 	void s_MarketDataRequest::SetExchange(const char* NewValue)
 	{
 		strncpy(Exchange, NewValue, sizeof(Exchange) - 1);
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataRequest::GetIntervalForSnapshotUpdatesInMilliseconds() const
+	{
+		if (Size < offsetof(s_MarketDataRequest, IntervalForSnapshotUpdatesInMilliseconds) + sizeof(IntervalForSnapshotUpdatesInMilliseconds))
+			return 0;
+
+		return IntervalForSnapshotUpdatesInMilliseconds;
 	}
 
 	/****************************************************************************/
@@ -1077,7 +1086,7 @@ namespace DTC
 	t_DateTimeWithMilliseconds s_MarketDataSnapshot::GetLastTradeDateTime() const
 	{
 		if (Size < offsetof(s_MarketDataSnapshot, LastTradeDateTime) + sizeof(LastTradeDateTime))
-			return 0;
+			return 0.0;
 
 		return LastTradeDateTime;
 	}
@@ -1086,7 +1095,7 @@ namespace DTC
 	t_DateTimeWithMilliseconds s_MarketDataSnapshot::GetBidAskDateTime() const
 	{
 		if (Size < offsetof(s_MarketDataSnapshot, BidAskDateTime) + sizeof(BidAskDateTime))
-			return 0;
+			return 0.0;
 
 		return BidAskDateTime;
 	}
@@ -1116,6 +1125,15 @@ namespace DTC
 			return TRADING_STATUS_UNKNOWN;
 
 		return TradingStatus;
+	}
+
+	/*==========================================================================*/
+	t_DateTimeWithMilliseconds s_MarketDataSnapshot::GetMarketDepthUpdateDateTime() const
+	{
+		if (Size < offsetof(s_MarketDataSnapshot, MarketDepthUpdateDateTime) + sizeof(MarketDepthUpdateDateTime))
+			return 0.0;
+
+		return MarketDepthUpdateDateTime;
 	}
 
 	/****************************************************************************/
@@ -1311,53 +1329,82 @@ namespace DTC
 	}
 
 	/****************************************************************************/
-	// s_MarketDepthFullUpdate20
+	// s_MarketDepthSnapshotLevelFloat
 
 	/*==========================================================================*/
-	uint16_t s_MarketDepthFullUpdate20::GetMessageSize() const
+	uint16_t s_MarketDepthSnapshotLevelFloat::GetMessageSize() const
 	{
 		return Size;
 	}
 
 	/*==========================================================================*/
-	void s_MarketDepthFullUpdate20::CopyFrom(void* p_SourceData)
+	void s_MarketDepthSnapshotLevelFloat::CopyFrom(void* p_SourceData)
 	{
-		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthFullUpdate20), *static_cast<uint16_t*>( p_SourceData) ));
+		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthSnapshotLevelFloat), *static_cast<uint16_t*>(p_SourceData)));
 	}
 
 	/*==========================================================================*/
-	uint32_t s_MarketDepthFullUpdate20::GetSymbolID() const
+	uint32_t s_MarketDepthSnapshotLevelFloat::GetSymbolID() const
 	{
-		if (Size < offsetof(s_MarketDepthFullUpdate20, SymbolID) + sizeof(SymbolID))
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, SymbolID) + sizeof(SymbolID))
 			return 0;
 
 		return SymbolID;
 	}
 
-	/****************************************************************************/
-	// s_MarketDepthFullUpdate10
-
 	/*==========================================================================*/
-	uint16_t s_MarketDepthFullUpdate10::GetMessageSize() const
+	float s_MarketDepthSnapshotLevelFloat::GetPrice() const
 	{
-		return Size;
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, Price) + sizeof(Price))
+			return 0.0;
+
+		return Price;
 	}
 
 	/*==========================================================================*/
-	void s_MarketDepthFullUpdate10::CopyFrom(void* p_SourceData)
+	float s_MarketDepthSnapshotLevelFloat::GetQuantity() const
 	{
-		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthFullUpdate10), *static_cast<uint16_t*>( p_SourceData) ));
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, Quantity) + sizeof(Quantity))
+			return 0.0;
+
+		return Quantity;
 	}
 
 	/*==========================================================================*/
-	uint32_t s_MarketDepthFullUpdate10::GetSymbolID() const
+	uint32_t s_MarketDepthSnapshotLevelFloat::GetNumOrders() const
 	{
-		if (Size < offsetof(s_MarketDepthFullUpdate10, SymbolID) + sizeof(SymbolID))
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, NumOrders) + sizeof(NumOrders))
 			return 0;
 
-		return SymbolID;
+		return NumOrders;
 	}
 
+	/*==========================================================================*/
+	uint16_t s_MarketDepthSnapshotLevelFloat::GetLevel() const
+	{
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, Level) + sizeof(Level))
+			return 0;
+
+		return Level;
+	}
+
+	/*==========================================================================*/
+	AtBidOrAskEnum8 s_MarketDepthSnapshotLevelFloat::GetSide() const
+	{
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, Side) + sizeof(Side))
+			return BID_ASK_UNSET_8;
+
+		return Side;
+	}
+
+	/*==========================================================================*/
+	FinalUpdateInBatchEnum s_MarketDepthSnapshotLevelFloat::GetFinalUpdateInBatch() const
+	{
+		if (Size < offsetof(s_MarketDepthSnapshotLevelFloat, FinalUpdateInBatch) + sizeof(FinalUpdateInBatch))
+			return FINAL_UPDATE_UNSET;
+
+		return FinalUpdateInBatch;
+	}
 
 	/****************************************************************************/
 	// s_MarketDepthSnapshotLevel
@@ -1604,7 +1651,7 @@ namespace DTC
 	MarketDepthUpdateTypeEnum s_MarketDepthUpdateLevel::GetUpdateType() const
 	{
 		if (Size < offsetof(s_MarketDepthUpdateLevel, UpdateType) + sizeof(UpdateType))
-			return DEPTH_UNSET;
+			return MARKET_DEPTH_UNSET;
 
 		return UpdateType;
 	}
@@ -1682,7 +1729,7 @@ namespace DTC
 	MarketDepthUpdateTypeEnum s_MarketDepthUpdateLevel_Int::GetUpdateType() const
 	{
 		if (Size < offsetof(s_MarketDepthUpdateLevel_Int, UpdateType) + sizeof(UpdateType))
-			return DEPTH_UNSET;
+			return MARKET_DEPTH_UNSET;
 
 		return UpdateType;
 	}
@@ -1706,159 +1753,226 @@ namespace DTC
 	}
 
 	/****************************************************************************/
-	// s_MarketDepthIncrementalUpdateCompact
+	// s_MarketDepthUpdateLevelFloatWithMilliseconds
 
 	/*==========================================================================*/
-	uint16_t s_MarketDepthUpdateLevelCompact::GetMessageSize() const
+	uint16_t s_MarketDepthUpdateLevelFloatWithMilliseconds::GetMessageSize() const
 	{
 		return Size;
 	}
 
 	/*==========================================================================*/
-	void s_MarketDepthUpdateLevelCompact::CopyFrom(void* p_SourceData)
+	void s_MarketDepthUpdateLevelFloatWithMilliseconds::CopyFrom(void* p_SourceData)
 	{
-		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthUpdateLevelCompact), *static_cast<uint16_t*>( p_SourceData) ));
+		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthUpdateLevelFloatWithMilliseconds), *static_cast<uint16_t*>(p_SourceData)));
 	}
 
 	/*==========================================================================*/
-	uint32_t s_MarketDepthUpdateLevelCompact::GetSymbolID() const
+	uint32_t s_MarketDepthUpdateLevelFloatWithMilliseconds::GetSymbolID() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, SymbolID) + sizeof(SymbolID))
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, SymbolID) + sizeof(SymbolID))
 			return 0;
 
 		return SymbolID;
 	}
 
 	/*==========================================================================*/
-	AtBidOrAskEnum s_MarketDepthUpdateLevelCompact::GetSide() const
+	t_DateTimeWithMillisecondsInt s_MarketDepthUpdateLevelFloatWithMilliseconds::GetDateTime() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, Side) + sizeof(Side))
-			return BID_ASK_UNSET;
-
-		return Side;
-	}
-
-	/*==========================================================================*/
-	float s_MarketDepthUpdateLevelCompact::GetPrice() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, Price) + sizeof(Price))
-			return 0.0f;
-
-		return Price;
-	}
-
-	/*==========================================================================*/
-	float s_MarketDepthUpdateLevelCompact::GetQuantity() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, Quantity) + sizeof(Quantity))
-			return 0;
-
-		return Quantity;
-	}
-
-	/*==========================================================================*/
-	MarketDepthUpdateTypeEnum s_MarketDepthUpdateLevelCompact::GetUpdateType() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, UpdateType) + sizeof(UpdateType))
-			return DEPTH_UNSET;
-
-		return UpdateType;
-	}
-
-	/*==========================================================================*/
-	t_DateTime4Byte s_MarketDepthUpdateLevelCompact::GetDateTime() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, DateTime) + sizeof(DateTime))
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, DateTime) + sizeof(DateTime))
 			return 0;
 
 		return DateTime;
 	}
 
 	/*==========================================================================*/
-	uint32_t s_MarketDepthUpdateLevelCompact::GetNumOrders() const
+	float s_MarketDepthUpdateLevelFloatWithMilliseconds::GetPrice() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact, NumOrders) + sizeof(NumOrders))
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, Price) + sizeof(Price))
+			return 0.0;
+
+		return Price;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDepthUpdateLevelFloatWithMilliseconds::GetQuantity() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, Quantity) + sizeof(Quantity))
+			return 0.0;
+
+		return Quantity;
+	}
+	/*==========================================================================*/
+	int8_t s_MarketDepthUpdateLevelFloatWithMilliseconds::GetSide() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, Side) + sizeof(Side))
+			return 0;
+
+		return Side;
+	}
+
+	/*==========================================================================*/
+	int8_t s_MarketDepthUpdateLevelFloatWithMilliseconds::GetUpdateType() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, UpdateType) + sizeof(UpdateType))
+			return 0;
+
+		return UpdateType;
+	}
+
+	/*==========================================================================*/
+	uint16_t s_MarketDepthUpdateLevelFloatWithMilliseconds::GetNumOrders() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, NumOrders) + sizeof(NumOrders))
 			return 0;
 
 		return NumOrders;
+	}
+
+	/*==========================================================================*/
+	DTC::FinalUpdateInBatchEnum s_MarketDepthUpdateLevelFloatWithMilliseconds::GetFinalUpdateInBatch() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelFloatWithMilliseconds, FinalUpdateInBatch) + sizeof(FinalUpdateInBatch))
+			return FINAL_UPDATE_UNSET;
+
+		return FinalUpdateInBatch;
 	}
 
 	/****************************************************************************/
-	// s_MarketDepthIncrementalUpdateCompact2
+	// s_MarketDepthUpdateLevelNoTimestamp
 
 	/*==========================================================================*/
-	uint16_t s_MarketDepthUpdateLevelCompact2::GetMessageSize() const
+	uint16_t s_MarketDepthUpdateLevelNoTimestamp::GetMessageSize() const
 	{
 		return Size;
 	}
 
 	/*==========================================================================*/
-	void s_MarketDepthUpdateLevelCompact2::CopyFrom(void* p_SourceData)
+	void s_MarketDepthUpdateLevelNoTimestamp::CopyFrom(void* p_SourceData)
 	{
-		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthUpdateLevelCompact2), *static_cast<uint16_t*>(p_SourceData)));
+		memcpy(this, p_SourceData, min(sizeof(s_MarketDepthUpdateLevelNoTimestamp), *static_cast<uint16_t*>(p_SourceData)));
 	}
 
 	/*==========================================================================*/
-	uint32_t s_MarketDepthUpdateLevelCompact2::GetSymbolID() const
+	uint32_t s_MarketDepthUpdateLevelNoTimestamp::GetSymbolID() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, SymbolID) + sizeof(SymbolID))
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, SymbolID) + sizeof(SymbolID))
 			return 0;
 
 		return SymbolID;
 	}
 
 	/*==========================================================================*/
-	int8_t s_MarketDepthUpdateLevelCompact2::GetSide() const
+	float s_MarketDepthUpdateLevelNoTimestamp::GetPrice() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, Side) + sizeof(Side))
-			return 0;
-
-		return Side;
-	}
-
-	/*==========================================================================*/
-	int8_t s_MarketDepthUpdateLevelCompact2::GetUpdateType() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, UpdateType) + sizeof(UpdateType))
-			return 0;
-
-		return UpdateType;
-	}
-
-	/*==========================================================================*/
-	uint16_t s_MarketDepthUpdateLevelCompact2::GetNumOrders() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, NumOrders) + sizeof(NumOrders))
-			return 0;
-
-		return NumOrders;
-	}
-
-	/*==========================================================================*/
-	float s_MarketDepthUpdateLevelCompact2::GetPrice() const
-	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, Price) + sizeof(Price))
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, Price) + sizeof(Price))
 			return 0.0;
 
 		return Price;
 	}
 
 	/*==========================================================================*/
-	float s_MarketDepthUpdateLevelCompact2::GetQuantity() const
+	float s_MarketDepthUpdateLevelNoTimestamp::GetQuantity() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, Quantity) + sizeof(Quantity))
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, Quantity) + sizeof(Quantity))
 			return 0.0;
 
 		return Quantity;
 	}
 
 	/*==========================================================================*/
-	t_DateTime4Byte s_MarketDepthUpdateLevelCompact2::GetDateTime() const
+	uint16_t s_MarketDepthUpdateLevelNoTimestamp::GetNumOrders() const
 	{
-		if (Size < offsetof(s_MarketDepthUpdateLevelCompact2, DateTime) + sizeof(DateTime))
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, NumOrders) + sizeof(NumOrders))
 			return 0;
 
-		return DateTime;
+		return NumOrders;
+	}
+
+	/*==========================================================================*/
+	int8_t s_MarketDepthUpdateLevelNoTimestamp::GetSide() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, Side) + sizeof(Side))
+			return 0;
+
+		return Side;
+	}
+
+	/*==========================================================================*/
+	int8_t s_MarketDepthUpdateLevelNoTimestamp::GetUpdateType() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, UpdateType) + sizeof(UpdateType))
+			return 0;
+
+		return UpdateType;
+	}
+
+	/*==========================================================================*/
+	FinalUpdateInBatchEnum s_MarketDepthUpdateLevelNoTimestamp::GetFinalUpdateInBatch() const
+	{
+		if (Size < offsetof(s_MarketDepthUpdateLevelNoTimestamp, FinalUpdateInBatch) + sizeof(FinalUpdateInBatch))
+			return FINAL_UPDATE_UNSET;
+
+		return FinalUpdateInBatch;
+	}
+
+	/****************************************************************************/
+	// s_MarketDataUpdateTradeNoTimestamp
+
+	uint16_t s_MarketDataUpdateTradeNoTimestamp::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_MarketDataUpdateTradeNoTimestamp::CopyFrom(void* p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_MarketDataUpdateTradeNoTimestamp), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataUpdateTradeNoTimestamp::GetSymbolID() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateTradeNoTimestamp, SymbolID) + sizeof(SymbolID))
+			return 0;
+
+		return SymbolID;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateTradeNoTimestamp::GetPrice() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateTradeNoTimestamp, Price) + sizeof(Price))
+			return 0.0;
+
+		return Price;
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataUpdateTradeNoTimestamp::GetVolume() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateTradeNoTimestamp, Volume) + sizeof(Volume))
+			return 0;
+
+		return Volume;
+	}
+
+	/*==========================================================================*/
+	AtBidOrAskEnum8 s_MarketDataUpdateTradeNoTimestamp::GetAtBidOrAsk() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateTradeNoTimestamp, AtBidOrAsk) + sizeof(AtBidOrAsk))
+			return BID_ASK_UNSET_8;
+
+		return AtBidOrAsk;
+	}
+
+	/*==========================================================================*/
+	UnbundledTradeIndicatorEnum s_MarketDataUpdateTradeNoTimestamp::GetUnbundledTradeIndicator() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateTradeNoTimestamp, UnbundledTradeIndicator) + sizeof(UnbundledTradeIndicator))
+			return UNBUNDLED_TRADE_NONE;
+
+		return UnbundledTradeIndicator;
 	}
 
 	/****************************************************************************/
@@ -2507,6 +2621,153 @@ namespace DTC
 	}
 
 	/****************************************************************************/
+	// s_MarketDataUpdateBidAskFloatWithMilliseconds
+
+	/*==========================================================================*/
+	uint16_t s_MarketDataUpdateBidAskFloatWithMilliseconds::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_MarketDataUpdateBidAskFloatWithMilliseconds::CopyFrom(void * p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_MarketDataUpdateBidAskFloatWithMilliseconds), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataUpdateBidAskFloatWithMilliseconds::GetSymbolID() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskFloatWithMilliseconds, SymbolID) + sizeof(SymbolID))
+			return 0;
+
+		return SymbolID;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateBidAskFloatWithMilliseconds::GetBidPrice() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskFloatWithMilliseconds, BidPrice) + sizeof(BidPrice))
+			return 0.0;
+
+		return BidPrice;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateBidAskFloatWithMilliseconds::GetBidQuantity() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskFloatWithMilliseconds, BidQuantity) + sizeof(BidQuantity))
+			return 0.0;
+
+		return BidQuantity;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateBidAskFloatWithMilliseconds::GetAskPrice() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskFloatWithMilliseconds, AskPrice) + sizeof(AskPrice))
+			return 0.0;
+
+		return AskPrice;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateBidAskFloatWithMilliseconds::GetAskQuantity() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskFloatWithMilliseconds, AskQuantity) + sizeof(AskQuantity))
+			return 0.0;
+
+		return AskQuantity;
+	}
+
+	/*==========================================================================*/
+	t_DateTimeWithMillisecondsInt s_MarketDataUpdateBidAskFloatWithMilliseconds::GetDateTime() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskFloatWithMilliseconds, DateTime) + sizeof(DateTime))
+			return 0;
+
+		return DateTime;
+	}
+
+	/****************************************************************************/
+	// s_MarketDataUpdateBidAskNoTimeStamp
+
+	/*==========================================================================*/
+	uint16_t s_MarketDataUpdateBidAskNoTimeStamp::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_MarketDataUpdateBidAskNoTimeStamp::CopyFrom(void* p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_MarketDataUpdateBidAskNoTimeStamp), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	uint16_t s_MarketDataUpdateBidAskNoTimeStamp::GetSize() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, Size) + sizeof(Size))
+			return 0;
+
+		return Size;
+	}
+
+	/*==========================================================================*/
+	uint16_t s_MarketDataUpdateBidAskNoTimeStamp::GetType() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, Type) + sizeof(Type))
+			return 0;
+
+		return Type;
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataUpdateBidAskNoTimeStamp::GetSymbolID() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, SymbolID) + sizeof(SymbolID))
+			return 0;
+
+		return SymbolID;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateBidAskNoTimeStamp::GetBidPrice() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, BidPrice) + sizeof(BidPrice))
+			return 0.0;
+
+		return BidPrice;
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataUpdateBidAskNoTimeStamp::GetBidQuantity() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, BidQuantity) + sizeof(BidQuantity))
+			return 0;
+
+		return BidQuantity;
+	}
+
+	/*==========================================================================*/
+	float s_MarketDataUpdateBidAskNoTimeStamp::GetAskPrice() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, AskPrice) + sizeof(AskPrice))
+			return 0.0;
+
+		return AskPrice;
+	}
+
+	/*==========================================================================*/
+	uint32_t s_MarketDataUpdateBidAskNoTimeStamp::GetAskQuantity() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateBidAskNoTimeStamp, AskQuantity) + sizeof(AskQuantity))
+			return 0;
+
+		return AskQuantity;
+	}
+
+	/****************************************************************************/
 	// s_TradeIncrementalUpdateCompact
 
 	/*==========================================================================*/
@@ -2608,6 +2869,14 @@ namespace DTC
 		return TradingSessionDate;
 	}
 
+	/*==========================================================================*/
+	uint8_t s_MarketDataUpdateSessionVolume::GetIsFinalSessionVolume() const
+	{
+		if (Size < offsetof(s_MarketDataUpdateSessionVolume, IsFinalSessionVolume) + sizeof(IsFinalSessionVolume))
+			return 0;
+
+		return IsFinalSessionVolume;
+	}
 
 	/****************************************************************************/
 	// s_OpenInterestIncrementalUpdate
@@ -3049,6 +3318,14 @@ namespace DTC
 		return OpenOrClose;
 	}
 
+	/*==========================================================================*/
+	double s_SubmitNewSingleOrder::GetMaxShowQuantity() const
+	{
+		if (Size < offsetof(s_SubmitNewSingleOrder, MaxShowQuantity) + sizeof(MaxShowQuantity))
+			return 0.0;
+
+		return MaxShowQuantity;
+	}
 
 	/****************************************************************************/
 	// s_SubmitNewSingleOrderInt
@@ -3236,6 +3513,115 @@ namespace DTC
 			return TRADE_UNSET;
 
 		return OpenOrClose;
+	}
+
+	/****************************************************************************/
+	// s_SubmitFlattenPositionOrder
+
+	/*==========================================================================*/
+	uint16_t s_SubmitFlattenPositionOrder::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_SubmitFlattenPositionOrder::CopyFrom(void* p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_SubmitFlattenPositionOrder), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	const char* s_SubmitFlattenPositionOrder::GetSymbol()
+	{
+		if (Size < offsetof(s_SubmitFlattenPositionOrder, Symbol) + sizeof(Symbol))
+			return "";
+
+		Symbol[sizeof(Symbol) - 1] = '\0';
+
+		return Symbol;
+	}
+
+	/*==========================================================================*/
+	void s_SubmitFlattenPositionOrder::SetSymbol(const char* NewValue)
+	{
+		strncpy(FreeFormText, NewValue, sizeof(Symbol) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_SubmitFlattenPositionOrder::GetExchange()
+	{
+		if (Size < offsetof(s_SubmitFlattenPositionOrder, Exchange) + sizeof(Exchange))
+			return "";
+
+		Exchange[sizeof(Exchange) - 1] = '\0';
+
+		return Exchange;
+	}
+
+	/*==========================================================================*/
+	void s_SubmitFlattenPositionOrder::SetExchange(const char* NewValue)
+	{
+		strncpy(FreeFormText, NewValue, sizeof(Exchange) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_SubmitFlattenPositionOrder::GetTradeAccount()
+	{
+		if (Size < offsetof(s_SubmitFlattenPositionOrder, TradeAccount) + sizeof(TradeAccount))
+			return "";
+
+		TradeAccount[sizeof(TradeAccount) - 1] = '\0';
+
+		return TradeAccount;
+	}
+
+	/*==========================================================================*/
+	void s_SubmitFlattenPositionOrder::SetTradeAccount(const char* NewValue)
+	{
+		strncpy(FreeFormText, NewValue, sizeof(TradeAccount) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_SubmitFlattenPositionOrder::GetClientOrderID()
+	{
+		if (Size < offsetof(s_SubmitFlattenPositionOrder, ClientOrderID) + sizeof(ClientOrderID))
+			return "";
+
+		ClientOrderID[sizeof(ClientOrderID) - 1] = '\0';
+
+		return ClientOrderID;
+	}
+
+	/*==========================================================================*/
+	void s_SubmitFlattenPositionOrder::SetClientOrderID(const char* NewValue)
+	{
+		strncpy(FreeFormText, NewValue, sizeof(ClientOrderID) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_SubmitFlattenPositionOrder::GetFreeFormText()
+	{
+		if (Size < offsetof(s_SubmitFlattenPositionOrder, FreeFormText) + sizeof(FreeFormText))
+			return "";
+
+		FreeFormText[sizeof(FreeFormText) - 1] = '\0';
+
+		return FreeFormText;
+	}
+
+	/*==========================================================================*/
+	void s_SubmitFlattenPositionOrder::SetFreeFormText(const char* NewValue)
+	{
+		strncpy(FreeFormText, NewValue, sizeof(FreeFormText) - 1);
+	}
+
+	/*==========================================================================*/
+	uint8_t s_SubmitFlattenPositionOrder::GetIsAutomatedOrder() const
+	{
+		if (Size < offsetof(s_SubmitFlattenPositionOrder, IsAutomatedOrder) + sizeof(IsAutomatedOrder))
+			return 0;
+
+		return IsAutomatedOrder;
 	}
 
 	/****************************************************************************/
@@ -5937,6 +6323,15 @@ namespace DTC
 		return ContractSize;
 	}
 
+	/*==========================================================================*/
+	uint32_t s_SecurityDefinitionResponse::GetOpenInterest() const
+	{
+		if (Size < offsetof(s_SecurityDefinitionResponse, OpenInterest) + sizeof(OpenInterest))
+			return 0;
+
+		return OpenInterest;
+	}
+
 	/****************************************************************************/
 	// s_SecurityDefinitionReject
 
@@ -6206,6 +6601,182 @@ namespace DTC
 		InfoText[sizeof(InfoText) - 1] = '\0';  // Ensure that the null terminator exists
 
 		return InfoText;
+	}
+
+	/*==========================================================================*/
+	uint64_t s_AccountBalanceUpdate::GetTransactionIdentifier() const
+	{
+		if (Size < offsetof(s_AccountBalanceUpdate, TransactionIdentifier) + sizeof(TransactionIdentifier))
+			return 0;
+
+		return TransactionIdentifier;
+	}
+
+	/****************************************************************************/
+	// struct s_AccountBalanceAdjustment
+
+	/*==========================================================================*/
+	uint16_t s_AccountBalanceAdjustment::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustment::CopyFrom(void* p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_AccountBalanceAdjustment), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	int32_t s_AccountBalanceAdjustment::GetRequestID() const
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustment, RequestID) + sizeof(RequestID))
+			return 0;
+
+		return RequestID;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustment::SetTradeAccount(const char* NewValue)
+	{
+		strncpy(TradeAccount, NewValue, sizeof(TradeAccount) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_AccountBalanceAdjustment::GetTradeAccount()
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustment, TradeAccount) + sizeof(TradeAccount))
+			return "";
+
+		TradeAccount[sizeof(TradeAccount) - 1] = '\0';  // Ensure that the null terminator exists
+
+		return TradeAccount;
+	}
+
+	/*==========================================================================*/
+	double s_AccountBalanceAdjustment::GetCreditAmount() const
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustment, CreditAmount) + sizeof(CreditAmount))
+			return 0.0;
+
+		return CreditAmount;
+	}
+
+	/*==========================================================================*/
+	double s_AccountBalanceAdjustment::GetDebitAmount() const
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustment, DebitAmount) + sizeof(DebitAmount))
+			return 0.0;
+
+		return DebitAmount;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustment::SetCurrency(const char* NewValue)
+	{
+		strncpy(Currency, NewValue, sizeof(Currency) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_AccountBalanceAdjustment::GetCurrency()
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustment, Currency) + sizeof(Currency))
+			return "";
+
+		Currency[sizeof(Currency) - 1] = '\0';  // Ensure that the null terminator exists
+
+		return Currency;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustment::SetReason(const char* NewValue)
+	{
+		strncpy(Reason, NewValue, sizeof(Reason) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_AccountBalanceAdjustment::GetReason()
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustment, Reason) + sizeof(Reason))
+			return "";
+
+		Reason[sizeof(Reason) - 1] = '\0';  // Ensure that the null terminator exists
+
+		return Reason;
+	}
+
+	/****************************************************************************/
+	// struct s_AccountBalanceAdjustmentReject
+
+	/*==========================================================================*/
+	uint16_t s_AccountBalanceAdjustmentReject::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustmentReject::CopyFrom(void* p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_AccountBalanceAdjustmentReject), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	int32_t s_AccountBalanceAdjustmentReject::GetRequestID() const
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustmentReject, RequestID) + sizeof(RequestID))
+			return 0;
+
+		return RequestID;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustmentReject::SetRejectText(const char* NewValue)
+	{
+		strncpy(RejectText, NewValue, sizeof(RejectText) - 1);
+	}
+
+	/*==========================================================================*/
+	const char* s_AccountBalanceAdjustmentReject::GetRejectText()
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustmentReject, RejectText) + sizeof(RejectText))
+			return "";
+
+		RejectText[sizeof(RejectText) - 1] = '\0';  // Ensure that the null terminator exists
+
+		return RejectText;
+	}
+
+	/****************************************************************************/
+	// struct s_AccountBalanceAdjustmentComplete
+
+	/*==========================================================================*/
+	uint16_t s_AccountBalanceAdjustmentComplete::GetMessageSize() const
+	{
+		return Size;
+	}
+
+	/*==========================================================================*/
+	void s_AccountBalanceAdjustmentComplete::CopyFrom(void* p_SourceData)
+	{
+		memcpy(this, p_SourceData, min(sizeof(s_AccountBalanceAdjustmentComplete), *static_cast<uint16_t*>(p_SourceData)));
+	}
+
+	/*==========================================================================*/
+	int32_t s_AccountBalanceAdjustmentComplete::GetRequestID() const
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustmentComplete, RequestID) + sizeof(RequestID))
+			return 0;
+
+		return RequestID;
+	}
+
+	/*==========================================================================*/
+	int64_t s_AccountBalanceAdjustmentComplete::GetTransactionID() const
+	{
+		if (Size < offsetof(s_AccountBalanceAdjustmentComplete, TransactionID) + sizeof(TransactionID))
+			return 0;
+
+		return TransactionID;
 	}
 
 	/****************************************************************************/
