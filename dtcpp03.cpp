@@ -13,7 +13,9 @@ using this block as example to add mutliple symbols
 
 	for (int i=0; symlist[i] != NULL; i++) 
 		printf("%s\n", symlist[i]);
-		
+
+TODO: remove feed.DateTime, when it is not needed anymore
+
 ** items to check:
 HRTBTINTERVAL
 instr
@@ -136,15 +138,15 @@ void listen_server(int &sock, char* instr, char* dt){
 						//mkt_bac.Clear();
 						mkt_bac.CopyFrom(static_cast<void*>(buf));
 						fprice << now << ", 117, " <<
-							mkt_bac.Size << ", " <<
-							mkt_bac.DateTime << ", " << 
-							mkt_bac.SymbolID << ", " << 
+							//mkt_bac.Size << ", " <<
+							//mkt_bac.DateTime << ", " << 
+							//mkt_bac.SymbolID << ", " << 
 							mkt_bac.BidPrice << ", " << 
 							mkt_bac.BidQuantity << ", " << 
 							mkt_bac.AskPrice << ", " << 
 							mkt_bac.AskQuantity << "\n";
 						std::cout << now  << ", 117, " <<
-							mkt_bac.SymbolID << ", " << 
+							//mkt_bac.SymbolID << ", " << 
 							mkt_bac.BidPrice << ", " << 
 							mkt_bac.AskPrice << "\n";	
 						break;
@@ -153,14 +155,14 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						mkt_tc.CopyFrom(static_cast<void*>(buf));
 						fprice << now << ", 112, " <<
-							mkt_tc.Size << ", " <<
-							mkt_tc.DateTime << ", " << 
-							mkt_tc.SymbolID << ", " << 
+							//mkt_tc.Size << ", " <<
+							//mkt_tc.DateTime << ", " << 
+							//mkt_tc.SymbolID << ", " << 
 							mkt_tc.Price << ", " << 
 							mkt_tc.Volume << ", " << 
 							mkt_tc.AtBidOrAsk << "\n";
 						std::cout << now << ", 112, " <<
-							mkt_tc.SymbolID << ", " << 
+							//mkt_tc.SymbolID << ", " << 
 							mkt_tc.Price << ", " << 
 							mkt_tc.Volume << "\n";
 							//mkt_tc.AtBidOrAsk << "\n";
@@ -170,11 +172,11 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						mkt_vol.CopyFrom(static_cast<void*>(buf));
 						flog << now << ", 113, " <<
-							mkt_vol.Size << ", " <<
-							mkt_vol.SymbolID << ", " <<
-							mkt_vol.Volume << std::endl;
+							//mkt_vol.Size << ", " <<
+							//mkt_vol.SymbolID << ", " <<
+							mkt_vol.Volume << "\n";
 						std::cout << now << ", 113, " <<
-							mkt_vol.SymbolID << ", " <<
+							//mkt_vol.SymbolID << ", " <<
 							mkt_vol.Volume << "\n";
 						break;
 						}
@@ -182,11 +184,11 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						mkt_high.CopyFrom(static_cast<void*>(buf));
 						flog << now <<", 114, " <<
-							mkt_high.Size << ", " <<
-							mkt_high.SymbolID << ", " <<
-							mkt_high.Price << std::endl;
+							//mkt_high.Size << ", " <<
+							//mkt_high.SymbolID << ", " <<
+							mkt_high.Price << "\n";
 						std::cout << now << ", 114," <<
-							mkt_high.SymbolID << ", " <<
+							//mkt_high.SymbolID << ", " <<
 							mkt_high.Price << "\n";
 						break;
 						}
@@ -194,11 +196,11 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						mkt_low.CopyFrom(static_cast<void*>(buf));
 						flog << now << ", 115, " <<
-							mkt_low.Size << ", " <<
-							mkt_low.SymbolID << ", " <<
-							mkt_low.Price << std::endl;
+							//mkt_low.Size << ", " <<
+							//mkt_low.SymbolID << ", " <<
+							mkt_low.Price << "\n";
 						std::cout << now << ", 115," <<
-							mkt_low.SymbolID << ", " <<
+							//mkt_low.SymbolID << ", " <<
 							mkt_low.Price << "\n";
 						break;
 						}
@@ -206,12 +208,12 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						mkt_set.CopyFrom(static_cast<void*>(buf));
 						flog << now << ", 119, " <<
-							mkt_set.Size << ", " <<
-							mkt_set.SymbolID << ", " <<
-							mkt_set.Price << ", " <<
-							mkt_set.DateTime << std::endl;
+							//mkt_set.Size << ", " <<
+							//mkt_set.SymbolID << ", " <<
+							mkt_set.Price << ", " << "\n";
+							//mkt_set.DateTime << std::endl;
 						std::cout << now << ", 119," <<
-							mkt_set.SymbolID << ", " <<
+							//mkt_set.SymbolID << ", " <<
 							mkt_set.Price << "\n";
 						break;
 						}
@@ -220,8 +222,8 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						mkt_snap.CopyFrom(static_cast<void*>(buf));
 						flog << now << ", 104, " <<
-							mkt_snap.Size << ", " <<
-							mkt_snap.SymbolID << ", " << 
+							//mkt_snap.Size << ", " <<
+							//mkt_snap.SymbolID << ", " << 
 							mkt_snap.SessionSettlementPrice << ", " << 
 							mkt_snap.SessionOpenPrice << ", " << 
 							mkt_snap.SessionHighPrice << ", " << 
@@ -247,12 +249,12 @@ void listen_server(int &sock, char* instr, char* dt){
 						{ 
 						enc_resp.CopyFrom(static_cast<void*>(buf));
 						flog << now << ", 7, " <<
-							enc_resp.Size << ", " <<
+							//enc_resp.Size << ", " <<
 							enc_resp.ProtocolVersion << ", " <<
 							enc_resp.Encoding << ", " <<
 							enc_resp.ProtocolType << "\n";
 						std::cout << "ENCODING_RESPONSE: " <<
-							enc_resp.Size << ", " <<
+							//enc_resp.Size << ", " <<
 							enc_resp.ProtocolVersion << ", " <<
 							enc_resp.Encoding << ", " <<
 							enc_resp.ProtocolType << "\n";
@@ -262,23 +264,22 @@ void listen_server(int &sock, char* instr, char* dt){
 						{
 						logon_resp.CopyFrom(static_cast<void*>(buf));
 						flog << now << ", 2, " <<
-							logon_resp.Size << ", "  << 
+							//logon_resp.Size << ", "  << 
 							logon_resp.ProtocolVersion << ", " << 
 							logon_resp.Result << ", " <<
 							logon_resp.ResultText << ", " <<
 							logon_resp.ServerName << "\n";
 						std::cout << "LOGON_RESPONSE: " <<
-							logon_resp.Size << ", "  << 
+							//logon_resp.Size << ", "  << 
 							logon_resp.ProtocolVersion << ", " << 
 							logon_resp.Result << ", " <<
 							logon_resp.ResultText << ", " <<
-							logon_resp.ServerName << ", " <<
-							"test on " <<  instr << "\n";
+							logon_resp.ServerName << "\n";
 						break;
 						}
 					default:	// Catch all messages not covered yet
 						{
-						flog << now << ", " << "Unknown: " << ", " << header.type << std::endl;
+						flog << now << ", " << "Unknown: " << ", " << header.type << "\n";
 						std::cout << "Unknown: " << header.type << "\n";
 						}
 				}
